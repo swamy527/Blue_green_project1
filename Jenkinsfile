@@ -45,5 +45,17 @@ pipeline {
                 }
             }
         }
+        stage('Deploy SVC-APP') {
+            steps {
+                script {
+                    withKubeConfig(caCertificate: '', clusterName: 'roboshop', contextName: '', credentialsId: 'kube-token', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://D942CF49AA12CC4666768CC28C71338C.gr7.us-east-1.eks.amazonaws.com') {
+                       sh """ if ! kubectl get svc app -n ${KUBE_NAMESPACE}; then
+                          kubectl apply -f app-service.yml -n ${KUBE_NAMESPACE}
+                        fi
+                        """
+                    }
+                }
+            }
+        }
     }
 }
