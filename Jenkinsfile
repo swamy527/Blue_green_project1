@@ -57,5 +57,23 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    def deploymentFile = ""
+                    if (params.DEPLOY_ENV == 'blue') {
+                        deploymentFile = 'app-deployment-blue.yml'
+                    } else {
+                        deploymentFile = 'app-deployment-green.yml'
+                    }
+                    withKubeConfig(caCertificate: '', clusterName: 'roboshop', contextName: '', credentialsId: 'kube-token', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://D942CF49AA12CC4666768CC28C71338C.gr7.us-east-1.eks.amazonaws.com') {
+						sh "kubectl apply -f pv-pvc.yml -n ${KUBE_NAMESPACE}"
+						sh "kubectl apply -f mysql-ds.yml -n ${KUBE_NAMESPACE}"
+                        sh "kubectl apply -f ${deploymentFile} -n ${KUBE_NAMESPACE}"
+						
+                    }
+                }
+            }
+        }
     }
 }
